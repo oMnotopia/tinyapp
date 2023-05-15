@@ -19,12 +19,9 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const shortURL = req.params.id;
   const templateVars = {
-    urls: {
-      short: shortURL,
-      long: urlDatabase[shortURL],
-    }
+    short: req.params.id,
+    long: urlDatabase[req.params.id],
   };
   res.render("urls_show", templateVars);
 });
