@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/oMnotopia/tinyapp/issues"
   },
-  "homepage": "https://github.com/oMnotopia/tinyapp#readme"
+  "homepage": "https://github.com/oMnotopia/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
