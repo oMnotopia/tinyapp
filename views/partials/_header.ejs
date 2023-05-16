@@ -12,7 +12,7 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content: space-between;" >
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="justify-content: space-between; align-items: center;" >
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
@@ -20,8 +20,8 @@
       <% if(username){ %>
         <div>
           <form class="form-inline" action="/logout" method="POST">
-            <div class="form-group mb-2">
-              <%= username %>
+            <div class="form-group">
+              <b style="padding-right: 1rem;"><%= username %></b>
               <button type="submit" class="btn" style="border: 1px solid black">Logout</button>
             </div>
           </form>
