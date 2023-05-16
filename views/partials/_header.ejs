@@ -20,8 +20,8 @@
       <% if(username){ %>
         <div>
           <form class="form-inline" action="/logout" method="POST">
-            <div class="form-group">
-              <b style="padding-right: 1rem;"><%= username %></b>
+            <div class="form-group" >
+              <p style="margin: 0">Loggin in as: <b style="padding-right: 1rem;"><%= username %></b></p>
               <button type="submit" class="btn" style="border: 1px solid black">Logout</button>
             </div>
           </form>
