@@ -15,11 +15,22 @@ const generateRandomString = () => {
 
 const checkIfUserExists = (userEmail) => {
   for (const user in users) {
-    if (users[user].email === userEmail) {
-      return true;
-    }
+    if (users[user].email === userEmail) return true;
   }
   return false;
+};
+
+const checkIfPasswordsMatch = (userPassword) => {
+  for (const user in users) {
+    if (users[user].password === userPassword) return true;
+  }
+  return false;
+};
+
+const returnUsersId = (userEmail) => {
+  for (const user in users) {
+    if (users[user].email === userEmail) return users[user].id;
+  }
 };
 
 //Enabling middleware
@@ -37,12 +48,12 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "a@a.com",
-    password: "purple-monkey-dinosaur",
+    password: "1111",
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "b@b.com",
-    password: "dishwasher-funk",
+    password: "2222",
   },
 };
 
@@ -61,7 +72,18 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body.user.email);
+  const userEmail =  req.body.email;
+  const userPassword = req.body.password;
+  if (!checkIfUserExists(userEmail)) {
+    res.status(403).send("This email doesn't exist please register an account");
+  }
+  if (!checkIfPasswordsMatch(userPassword)) {
+    res.status(403).send("The password does not match the existing one.");
+  }
+
+  const userId = returnUsersId(userEmail);
+
+  res.cookie("user_id", userId);
   res.redirect("/urls");
 });
 
