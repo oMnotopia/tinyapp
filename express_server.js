@@ -33,6 +33,16 @@ const returnUsersId = (userEmail) => {
   }
 };
 
+const urlsForUser = (id) => {
+  const filteredObj = {};
+  //const usersURLs = urlDatabase.filter(url => url.userID === userId);
+  for (const obj in urlDatabase) {
+    if (urlDatabase[obj].userId === id) filteredObj[obj] = urlDatabase[obj];
+  }
+  
+  return filteredObj;
+};
+
 //Enabling middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -133,9 +143,11 @@ app.post("/register", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userId = req.cookies["user_id"];
+  const filteredObj = urlsForUser(userId);
+
   const templateVars = {
     user: users[userId],
-    urls: urlDatabase
+    urls: filteredObj,
   };
   res.render("urls_index", templateVars);
 });
