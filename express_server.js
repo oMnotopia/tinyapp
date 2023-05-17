@@ -159,7 +159,7 @@ app.post("/urls", (req, res) => {
   const key = generateRandomString();
   urlDatabase[key] = {
     longURL: req.body.longURL,
-    userId: userId,
+    userID: userId,
   };
   res.redirect(`/urls/${key}`);
 });
@@ -176,6 +176,9 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const userId = req.cookies["user_id"];
+  if (!userId) return res.status(401).send("Please log in to view URL page.");
+  if (userId !== urlDatabase[req.params.id].userID) return res.status(401).send("You do not own this URL, please create your own.");
+
   const templateVars = {
     user: users[userId],
     short: req.params.id,
