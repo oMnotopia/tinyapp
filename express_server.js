@@ -171,8 +171,14 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  for (const url in urlDatabase) {
+    if (url === req.params.id) {
+      const longURL = urlDatabase[req.params.id];
+      return res.redirect(longURL);
+    }
+  }
+  
+  res.status(404).send("This URL does not exist in our database");
 });
 
 app.get("/urls.json", (req, res) => {
