@@ -1,8 +1,7 @@
 const express = require("express");
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080;
-
-const cookieParser = require('cookie-parser');
 
 const alphaNumericArr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 const generateRandomString = () => {
@@ -14,14 +13,29 @@ const generateRandomString = () => {
   return randStr;
 };
 
+//Enabling middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.set("view engine", "ejs");
 
+//Database objects
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+};
+
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
 };
 
 app.get("/", (req, res) => {
@@ -42,7 +56,19 @@ app.get("/register", (req, res) => {
   const templateVars = {
     username: req.cookies["username"],
   };
-  res.render("urls_login", templateVars);
+  res.render("urls_register", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  const usersRandomId = generateRandomString();
+  users[usersRandomId] = {
+    id: usersRandomId,
+    email: req.body.email,
+    password: req.body.password,
+  };
+  res.cookie("user_id", usersRandomId);
+  console.log(users);
+  res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
