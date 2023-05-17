@@ -17,11 +17,11 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-      <% if(username){ %>
+      <% if(user){ %>
         <div>
           <form class="form-inline" action="/logout" method="POST">
             <div class="form-group" >
-              <p style="margin: 0">Loggin in as: <b style="padding-right: 1rem;"><%= username %></b></p>
+              <p style="margin: 0">Loggin in as: <b style="padding-right: 1rem;"><%= user.email %></b></p>
               <button type="submit" class="btn" style="border: 1px solid black">Logout</button>
             </div>
           </form>
