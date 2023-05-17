@@ -40,8 +40,14 @@ app.set("view engine", "ejs");
 
 //Database objects
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 const users = {
@@ -56,6 +62,9 @@ const users = {
     password: "2222",
   },
 };
+
+// ----------------- Routes ----------------- //
+// ----------------- Homepage ----------------- //
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -136,7 +145,10 @@ app.post("/urls", (req, res) => {
   if (!userId) return res.send("You can not create new short URLs unless you are logged in");
 
   const key = generateRandomString();
-  urlDatabase[key] = req.body.longURL;
+  urlDatabase[key] = {
+    longURL: req.body.longURL,
+    userId: userId,
+  };
   res.redirect(`/urls/${key}`);
 });
 
@@ -155,13 +167,13 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     user: users[userId],
     short: req.params.id,
-    long: urlDatabase[req.params.id],
+    long: urlDatabase[req.params.id].longURL,
   };
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURLEdit;
+  urlDatabase[req.params.id].longURL = req.body.longURLEdit;
   res.redirect("/urls");
 });
 
@@ -173,7 +185,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.get("/u/:id", (req, res) => {
   for (const url in urlDatabase) {
     if (url === req.params.id) {
-      const longURL = urlDatabase[req.params.id];
+      const longURL = urlDatabase[req.params.id].longURL;
       return res.redirect(longURL);
     }
   }
