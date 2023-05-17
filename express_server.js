@@ -13,6 +13,15 @@ const generateRandomString = () => {
   return randStr;
 };
 
+const checkIfUserExists = (userEmail) => {
+  for (const user in users) {
+    if (users[user].email === userEmail) {
+      return true;
+    }
+  }
+  return false;
+};
+
 //Enabling middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -27,12 +36,12 @@ const urlDatabase = {
 const users = {
   userRandomID: {
     id: "userRandomID",
-    email: "user@example.com",
+    email: "a@a.com",
     password: "purple-monkey-dinosaur",
   },
   user2RandomID: {
     id: "user2RandomID",
-    email: "user2@example.com",
+    email: "b@b.com",
     password: "dishwasher-funk",
   },
 };
@@ -40,6 +49,8 @@ const users = {
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+
+// ----------------- Login/Logout ----------------- //
 
 app.post("/login", (req, res) => {
   res.cookie("user_id", req.body.user.email);
@@ -51,6 +62,8 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+// ----------------- Register ----------------- //
+
 app.get("/register", (req, res) => {
   const userId = req.cookies["user_id"];
   const templateVars = {
@@ -60,19 +73,27 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  if (req.body.email === "" || req.body.password === "") {
-    res.status(400).send("Missing email or password");
-    return;
+  const userEmail = req.body.email;
+  const userPass = req.body.password;
+  if (userEmail === "" || userPass === "") {
+    return res.status(400).send("Missing email or password");
   }
+
+  if (checkIfUserExists(userEmail)) {
+    return res.status(400).send("This email already exists in the database.");
+  }
+
   const usersRandomId = generateRandomString();
   users[usersRandomId] = {
     id: usersRandomId,
-    email: req.body.email,
-    password: req.body.password,
+    email: userEmail,
+    password: userPass,
   };
   res.cookie("user_id", usersRandomId);
   res.redirect("/urls");
 });
+
+// ----------------- URLS ----------------- //
 
 app.get("/urls", (req, res) => {
   const userId = req.cookies["user_id"];
