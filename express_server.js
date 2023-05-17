@@ -65,9 +65,7 @@ app.get("/", (req, res) => {
 
 app.get("/login", (req, res) => {
   const userId = req.cookies["user_id"];
-  if (userId) {
-    return res.redirect("/urls");
-  }
+  if (userId) return res.redirect("/urls");
 
   const templateVars = {
     user: users[userId],
@@ -78,12 +76,9 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const userEmail =  req.body.email;
   const userPassword = req.body.password;
-  if (!checkIfUserExists(userEmail)) {
-    res.status(403).send("This email doesn't exist please register an account");
-  }
-  if (!checkIfPasswordsMatch(userPassword)) {
-    res.status(403).send("The password does not match the existing one.");
-  }
+
+  if (!checkIfUserExists(userEmail)) res.status(403).send("This email doesn't exist please register an account");
+  if (!checkIfPasswordsMatch(userPassword)) res.status(403).send("The password does not match the existing one.");
 
   const userId = returnUsersId(userEmail);
 
@@ -100,9 +95,7 @@ app.post("/logout", (req, res) => {
 
 app.get("/register", (req, res) => {
   const userId = req.cookies["user_id"];
-  if (userId) {
-    return res.redirect("/urls");
-  }
+  if (userId) return res.redirect("/urls");
 
   const templateVars = {
     user: users[userId],
@@ -113,13 +106,9 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const userEmail = req.body.email;
   const userPass = req.body.password;
-  if (userEmail === "" || userPass === "") {
-    return res.status(400).send("Missing email or password");
-  }
 
-  if (checkIfUserExists(userEmail)) {
-    return res.status(400).send("This email already exists in the database.");
-  }
+  if (userEmail === "" || userPass === "") return res.status(400).send("Missing email or password");
+  if (checkIfUserExists(userEmail)) return res.status(400).send("This email already exists in the database.");
 
   const usersRandomId = generateRandomString();
   users[usersRandomId] = {
@@ -143,6 +132,9 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  const userId = req.cookies["user_id"];
+  if (!userId) return res.send("You can not create new short URLs unless you are logged in");
+
   const key = generateRandomString();
   urlDatabase[key] = req.body.longURL;
   res.redirect(`/urls/${key}`);
@@ -150,6 +142,8 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const userId = req.cookies["user_id"];
+  if (!userId) return res.redirect("/login");
+
   const templateVars = {
     user: users[userId],
   };
