@@ -7,7 +7,7 @@ const alphaNumericArr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 
 const generateRandomString = () => {
   let randStr = '';
   while (randStr.length < 6) {
-    const randNum = Math.floor(Math.random() * 62);
+    const randNum = Math.floor(Math.random() * alphaNumericArr.length);
     randStr += alphaNumericArr[randNum];
   }
   return randStr;
@@ -16,7 +16,6 @@ const generateRandomString = () => {
 //Enabling middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 app.set("view engine", "ejs");
 
 //Database objects
@@ -61,6 +60,10 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  if (req.body.email === "" || req.body.password === "") {
+    res.status(400).send("Missing email or password");
+    return;
+  }
   const usersRandomId = generateRandomString();
   users[usersRandomId] = {
     id: usersRandomId,
