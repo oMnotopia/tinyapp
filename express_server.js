@@ -168,7 +168,7 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls/:id", (req, res) => {
+app.put("/urls/:id", (req, res) => {
   const userId = req.session.userId;
   if (!userId) return res.status(400).send("Please log in, in order to create shortened URLS");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");

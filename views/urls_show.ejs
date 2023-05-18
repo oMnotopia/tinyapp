@@ -21,7 +21,7 @@
           Short URL ID: <a href="/u/<%= short %>"><%= short %></a>
         </p>
 
-        <form class="form-inline card text-center" style="background-color:lightgray;" action="/urls/<%= short %>" method="POST">
+        <form class="form-inline card text-center" style="background-color:lightgray;" method="POST" action="/urls/<%= short %>?_method=PUT">
           <h3 style="margin:1rem 0 0 0; color:dimgray;">Edit</h3>
           <div class="form-group mb-2">
             <label for="longURLEdit">New URL:</label>
