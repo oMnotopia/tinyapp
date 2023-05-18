@@ -35,9 +35,9 @@ const returnUsersId = (userEmail) => {
 
 const urlsForUser = (id) => {
   const filteredObj = {};
-  //const usersURLs = urlDatabase.filter(url => url.userID === userId);
+
   for (const obj in urlDatabase) {
-    if (urlDatabase[obj].userId === id) filteredObj[obj] = urlDatabase[obj];
+    if (urlDatabase[obj].userID === id) filteredObj[obj] = urlDatabase[obj];
   }
   
   return filteredObj;
@@ -84,7 +84,8 @@ app.get("/", (req, res) => {
 
 app.get("/login", (req, res) => {
   const userId = req.cookies["user_id"];
-  if (userId) return res.redirect("/urls");
+  
+  if (userId && users[userId]) return res.redirect("/urls");
 
   const templateVars = {
     user: users[userId],
@@ -114,7 +115,7 @@ app.post("/logout", (req, res) => {
 
 app.get("/register", (req, res) => {
   const userId = req.cookies["user_id"];
-  if (userId) return res.redirect("/urls");
+  if (userId && users[userId]) return res.redirect("/urls");
 
   const templateVars = {
     user: users[userId],
@@ -149,6 +150,7 @@ app.get("/urls", (req, res) => {
     user: users[userId],
     urls: filteredObj,
   };
+
   res.render("urls_index", templateVars);
 });
 
@@ -176,8 +178,8 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const userId = req.cookies["user_id"];
-  if (!userId) return res.status(401).send("Please log in to view URL page.");
-  if (userId !== urlDatabase[req.params.id].userID) return res.status(401).send("You do not own this URL, please create your own.");
+  //if (!userId) return res.status(401).send("Please log in to view URL page.");
+  //if (userId !== urlDatabase[req.params.id].userID) return res.status(401).send("You do not own this URL, please create your own.");
 
   const templateVars = {
     user: users[userId],
@@ -188,6 +190,11 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
+  const userId = req.cookies["user_id"];
+  if (!userId) return res.status(400).send("Please log in, in order to create shortened URLS");
+  if (urlDatabase[req.params.id].userID !== userId) return res.status(401).send("You do not own this URL.");
+  if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
+
   urlDatabase[req.params.id].longURL = req.body.longURLEdit;
   res.redirect("/urls");
 });
