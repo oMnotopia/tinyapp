@@ -37,7 +37,7 @@
               <tr>
                 <td><%= id %></td>
                 <td><%= urls[id].longURL %></td>
-                <td><%= date %></td>
+                <td><%= urls[id].dateCreated %></td>
                 <td><%= urls[id].timesVisited %></td>
                 <td><form method="GET" action="/urls/<%= id %>" ><button type="submit" class="btn btn-primary">Edit</button></form></td>
                 <td><form method="POST" action="/urls/<%= id %>/delete?_method=DELETE" ><button type="submit" class="btn btn-danger">Delete</button></form></td>

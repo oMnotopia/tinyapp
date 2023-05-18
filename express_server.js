@@ -124,12 +124,10 @@ app.post("/register", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.session.userId;
   const filteredObj = urlsForUser(userId, urlDatabase);
-  const formattedDate = getCurrentDate();
 
   const templateVars = {
     user: users[userId],
     urls: filteredObj,
-    date: formattedDate,
   };
 
   res.render("urls_index", templateVars);
