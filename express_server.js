@@ -1,4 +1,4 @@
-const { getUserByEmail, generateRandomString, urlsForUser } = require("./helpers");
+const { getUserByEmail, urlsForUser, getCurrentDate, generateRandomString } = require("./helpers");
 const express = require("express");
 const cookieSession = require('cookie-session');
 const methodOverride = require('method-override');
@@ -48,7 +48,9 @@ const users = {
 // ----------------- Homepage ----------------- //
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const userId = req.session.userId;
+  if (userId) return res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // ----------------- Login/Logout ----------------- //
@@ -122,10 +124,12 @@ app.post("/register", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.session.userId;
   const filteredObj = urlsForUser(userId, urlDatabase);
+  const formattedDate = getCurrentDate();
 
   const templateVars = {
     user: users[userId],
     urls: filteredObj,
+    date: formattedDate,
   };
 
   res.render("urls_index", templateVars);
@@ -147,6 +151,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const userId = req.session.userId;
   if (!userId) return res.redirect("/login");
+
 
   const templateVars = {
     user: users[userId],
@@ -193,24 +198,12 @@ app.delete("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  if (urlDatabase[req.params.id] === undefined) {
-    return res.status(404).send("This URL does not exist in our database");
-  }
-
-
-  // for (const url in urlDatabase) {
-  //   if (url === req.params.id) {
-  //     const longURL = urlDatabase[req.params.id].longURL;
-  //     return res.redirect(longURL);
-  //   }
-  // }
-
+  //Filter for non-existant url in database.
+  if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This URL does not exist in our database");
 
   urlDatabase[req.params.id].timesVisited++;
   const longURL = urlDatabase[req.params.id].longURL;
   res.redirect(longURL);
-  
-  // res.status(404).send("This URL does not exist in our database");
 });
 
 app.get("/urls.json", (req, res) => {
