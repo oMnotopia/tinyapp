@@ -1,4 +1,4 @@
-const { checkIfUserExists, returnUsersId, generateRandomString, urlsForUser } = require("./helpers");
+const { checkIfUserExists, getUserByEmail, generateRandomString, urlsForUser } = require("./helpers");
 const express = require("express");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
@@ -14,10 +14,6 @@ const checkIfPasswordsMatch = (userPassword, userEmail, users) => {
   if (bcrypt.compareSync(userPassword, hashedPassword)) return true;
   return false;
 };
-
-
-
-
 
 //Enabling middleware
 app.use(express.urlencoded({ extended: true }));
@@ -62,7 +58,7 @@ app.get("/", (req, res) => {
 // ----------------- Login/Logout ----------------- //
 
 app.get("/login", (req, res) => {
-  const userId = req.session.user_id;
+  const userId = req.session.userId;
   
   if (userId && users[userId]) return res.redirect("/urls");
 
@@ -78,9 +74,9 @@ app.post("/login", (req, res) => {
   if (!checkIfUserExists(userEmail, users)) return res.status(403).send("This email doesn't exist please register an account");
   if (!checkIfPasswordsMatch(userPassword, userEmail, users)) return res.status(403).send("The password does not match the existing one.");
 
-  const userId = returnUsersId(userEmail, users);
+  const userId = getUserByEmail(userEmail, users);
 
-  req.session.user_id = userId;
+  req.session.userId = userId;
   res.redirect("/urls");
 });
 
@@ -92,7 +88,7 @@ app.post("/logout", (req, res) => {
 // ----------------- Register ----------------- //
 
 app.get("/register", (req, res) => {
-  const userId = req.session.user_id;
+  const userId = req.session.userId;
 
   if (userId && users[userId]) return res.redirect("/urls");
 
@@ -116,14 +112,14 @@ app.post("/register", (req, res) => {
     password: bcrypt.hashSync(userPass, 10),
   };
 
-  req.session.user_id = usersRandomId;
+  req.session.userId = usersRandomId;
   res.redirect("/urls");
 });
 
 // ----------------- URLS ----------------- //
 
 app.get("/urls", (req, res) => {
-  const userId = req.session.user_id;
+  const userId = req.session.userId;
   const filteredObj = urlsForUser(userId, urlDatabase);
 
   const templateVars = {
@@ -135,7 +131,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const userId = req.session.user_id;
+  const userId = req.session.userId;
   if (!userId) return res.send("You can not create new short URLs unless you are logged in");
 
   const key = generateRandomString();
@@ -147,7 +143,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const userId = req.session.user_id;
+  const userId = req.session.userId;
   if (!userId) return res.redirect("/login");
 
   const templateVars = {
@@ -157,7 +153,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const userId = req.session.user_id;
+  const userId = req.session.userId;
   if (!userId) return res.status(401).send("Please log in to view URL page.");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This URL does not exist in the database.");
   if (userId !== urlDatabase[req.params.id].userID) return res.status(401).send("You do not own this URL, please create your own.");
@@ -171,7 +167,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  const userId = req.session.user_id;
+  const userId = req.session.userId;
   if (!userId) return res.status(400).send("Please log in, in order to create shortened URLS");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
   if (urlDatabase[req.params.id].userID !== userId) return res.status(401).send("You do not own this URL, so you cannot access it.");
@@ -181,7 +177,7 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  const userId = req.session.user_id;
+  const userId = req.session.userId;
   if (!userId) return res.status(400).send("Please log in, in order to delete URL");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
   if (urlDatabase[req.params.id].userID !== userId) return res.status(401).send("You do not own this URL, so you cannot delete it.");
