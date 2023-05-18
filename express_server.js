@@ -144,6 +144,7 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: userId,
     timesVisited: 0,
+    dateCreated: "",
   };
   res.redirect(`/urls/${key}`);
 });
@@ -161,16 +162,23 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const userId = req.session.userId;
+  const shortURL = req.params.id;
   //Filters for not being logged in, no existing URL, and not owning the URL being used.
   if (!userId) return res.status(401).send("Please log in to view URL page.");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This URL does not exist in the database.");
   if (userId !== urlDatabase[req.params.id].userID) return res.status(401).send("You do not own this URL, please create your own.");
 
+  //If it doesnt already exist make a creation date and add it to the item in the urlDatabase object.
+  if (!urlDatabase[req.params.id]["dateCreated"]) {
+    urlDatabase[req.params.id]["dateCreated"] = getCurrentDate();
+  }
+
   const templateVars = {
     user: users[userId],
-    short: req.params.id,
-    long: urlDatabase[req.params.id].longURL,
-    timesVisited: urlDatabase[req.params.id].timesVisited,
+    short: shortURL,
+    long: urlDatabase[shortURL].longURL,
+    timesVisited: urlDatabase[shortURL].timesVisited,
+    dateCreated: urlDatabase[shortURL].dateCreated,
   };
   res.render("urls_show", templateVars);
 });

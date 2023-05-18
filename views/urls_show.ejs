@@ -20,6 +20,7 @@
         <p class="card-text">
           Short URL ID: <a href="/u/<%= short %>"><%= short %></a>
         </p>
+        <p>Date Created: <%= dateCreated %></p>
         <p>Times visited: <%= timesVisited %></p>
 
         <form class="form-inline card text-center" style="background-color:lightgray;" method="POST" action="/urls/<%= short %>?_method=PUT">
