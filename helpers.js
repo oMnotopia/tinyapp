@@ -1,10 +1,3 @@
-const checkIfUserExists = (userEmail, users) => {
-  for (const user in users) {
-    if (users[user].email === userEmail) return true;
-  }
-  return false;
-};
-
 const getUserByEmail = (userEmail, users) => {
   for (const user in users) {
     if (users[user].email === userEmail) return users[user].id;
@@ -31,4 +24,4 @@ const generateRandomString = () => {
   return randStr;
 };
 
-module.exports = { checkIfUserExists, getUserByEmail, generateRandomString, urlsForUser };
+module.exports = { getUserByEmail, generateRandomString, urlsForUser };
