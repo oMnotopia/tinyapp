@@ -7,16 +7,6 @@ const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
 
-const checkIfPasswordsMatch = (userPassword, userEmail, users) => {
-  let hashedPassword;
-  for (const user in users) {
-    if (users[user].email === userEmail) hashedPassword = users[user].password;
-  }
-
-  if (bcrypt.compareSync(userPassword, hashedPassword)) return true;
-  return false;
-};
-
 //Enabling middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -77,10 +67,14 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const userEmail =  req.body.email;
   const userPassword = req.body.password;
-  if (!getUserByEmail(userEmail, users)) return res.status(403).send("This email doesn't exist please register an account");
-  if (!checkIfPasswordsMatch(userPassword, userEmail, users)) return res.status(403).send("The password does not match the existing one.");
-
   const userId = getUserByEmail(userEmail, users);
+  let hashedPassword;
+
+  if (!userId) return res.status(403).send("This email doesn't exist please register an account");
+  if (users[userId].email === userEmail) hashedPassword = users[userId].password;
+  if (!bcrypt.compareSync(userPassword, hashedPassword)) return res.status(403).send("The password does not match the existing one.");
+
+  
 
   req.session.userId = userId;
   res.redirect("/urls");
