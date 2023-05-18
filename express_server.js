@@ -1,6 +1,5 @@
 const express = require("express");
-//const cookieParser = require('cookie-parser');
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
@@ -15,7 +14,7 @@ const generateRandomString = () => {
   return randStr;
 };
 
-const checkIfUserExists = (userEmail) => {
+const checkIfUserExists = (userEmail, users) => {
   for (const user in users) {
     if (users[user].email === userEmail) return true;
   }
@@ -54,7 +53,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
-//app.use(cookieParser());
 app.set("view engine", "ejs");
 
 //Database objects
@@ -92,7 +90,6 @@ app.get("/", (req, res) => {
 // ----------------- Login/Logout ----------------- //
 
 app.get("/login", (req, res) => {
-  //const userId = req.cookies["user_id"];
   const userId = req.session.user_id;
   
   if (userId && users[userId]) return res.redirect("/urls");
@@ -106,19 +103,16 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const userEmail =  req.body.email;
   const userPassword = req.body.password;
-  console.log("in here")
-  if (!checkIfUserExists(userEmail)) return res.status(403).send("This email doesn't exist please register an account");
+  if (!checkIfUserExists(userEmail, users)) return res.status(403).send("This email doesn't exist please register an account");
   if (!checkIfPasswordsMatch(userPassword, userEmail)) return res.status(403).send("The password does not match the existing one.");
 
   const userId = returnUsersId(userEmail);
 
-  //res.cookie("user_id", userId);
   req.session.user_id = userId;
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  //res.clearCookie("user_id");
   req.session = null;
   res.redirect("/login");
 });
@@ -126,7 +120,6 @@ app.post("/logout", (req, res) => {
 // ----------------- Register ----------------- //
 
 app.get("/register", (req, res) => {
-  //const userId = req.cookies["user_id"];
   const userId = req.session.user_id;
 
   if (userId && users[userId]) return res.redirect("/urls");
@@ -142,7 +135,7 @@ app.post("/register", (req, res) => {
   const userPass = req.body.password;
 
   if (userEmail === "" || userPass === "") return res.status(400).send("Missing email or password");
-  if (checkIfUserExists(userEmail)) return res.status(400).send("This email already exists in the database.");
+  if (checkIfUserExists(userEmail, users)) return res.status(400).send("This email already exists in the database.");
 
   const usersRandomId = generateRandomString();
   users[usersRandomId] = {
@@ -151,7 +144,6 @@ app.post("/register", (req, res) => {
     password: bcrypt.hashSync(userPass, 10),
   };
 
-  //res.cookie("user_id", usersRandomId);
   req.session.user_id = usersRandomId;
   res.redirect("/urls");
 });
@@ -159,7 +151,6 @@ app.post("/register", (req, res) => {
 // ----------------- URLS ----------------- //
 
 app.get("/urls", (req, res) => {
-  //const userId = req.cookies["user_id"];
   const userId = req.session.user_id;
   const filteredObj = urlsForUser(userId);
 
@@ -172,7 +163,6 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  //const userId = req.cookies["user_id"];
   const userId = req.session.user_id;
   if (!userId) return res.send("You can not create new short URLs unless you are logged in");
 
@@ -185,7 +175,6 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  //const userId = req.cookies["user_id"];
   const userId = req.session.user_id;
   if (!userId) return res.redirect("/login");
 
@@ -196,7 +185,6 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  //const userId = req.cookies["user_id"];
   const userId = req.session.user_id;
   if (!userId) return res.status(401).send("Please log in to view URL page.");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This URL does not exist in the database.");
@@ -211,7 +199,6 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  //const userId = req.cookies["user_id"];
   const userId = req.session.user_id;
   if (!userId) return res.status(400).send("Please log in, in order to create shortened URLS");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
@@ -222,7 +209,6 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  //const userId = req.cookies["user_id"];
   const userId = req.session.user_id;
   if (!userId) return res.status(400).send("Please log in, in order to delete URL");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
