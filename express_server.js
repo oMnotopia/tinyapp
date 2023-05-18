@@ -55,7 +55,7 @@ app.get("/", (req, res) => {
 
 app.get("/login", (req, res) => {
   const userId = req.session.userId;
-  
+  //Check if user exists and cookie of user exists
   if (userId && users[userId]) return res.redirect("/urls");
 
   const templateVars = {
@@ -70,11 +70,10 @@ app.post("/login", (req, res) => {
   const userId = getUserByEmail(userEmail, users);
   let hashedPassword;
 
+  //Filters for no email, or bad password associated to email
   if (!userId) return res.status(403).send("This email doesn't exist please register an account");
   if (users[userId].email === userEmail) hashedPassword = users[userId].password;
   if (!bcrypt.compareSync(userPassword, hashedPassword)) return res.status(403).send("The password does not match the existing one.");
-
-  
 
   req.session.userId = userId;
   res.redirect("/urls");
@@ -89,7 +88,7 @@ app.post("/logout", (req, res) => {
 
 app.get("/register", (req, res) => {
   const userId = req.session.userId;
-
+  //Check if user exists and cookie of user exists
   if (userId && users[userId]) return res.redirect("/urls");
 
   const templateVars = {
@@ -102,9 +101,11 @@ app.post("/register", (req, res) => {
   const userEmail = req.body.email;
   const userPass = req.body.password;
 
+  //Filters for not inputting email/password or existing email
   if (userEmail === "" || userPass === "") return res.status(400).send("Missing email or password");
   if (getUserByEmail(userEmail, users)) return res.status(400).send("This email already exists in the database.");
 
+  //Create new user object for users database
   const usersRandomId = generateRandomString();
   users[usersRandomId] = {
     id: usersRandomId,
@@ -155,6 +156,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const userId = req.session.userId;
+  //Filters for not being logged in, no existing URL, and not owning the URL being used.
   if (!userId) return res.status(401).send("Please log in to view URL page.");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This URL does not exist in the database.");
   if (userId !== urlDatabase[req.params.id].userID) return res.status(401).send("You do not own this URL, please create your own.");
@@ -170,7 +172,8 @@ app.get("/urls/:id", (req, res) => {
 
 app.put("/urls/:id", (req, res) => {
   const userId = req.session.userId;
-  if (!userId) return res.status(400).send("Please log in, in order to create shortened URLS");
+  //Filters for not being logged in, no existing URL, and not owning the URL being used.
+  if (!userId) return res.status(401).send("Please log in, in order to create shortened URLS");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
   if (urlDatabase[req.params.id].userID !== userId) return res.status(401).send("You do not own this URL, so you cannot access it.");
 
@@ -180,7 +183,8 @@ app.put("/urls/:id", (req, res) => {
 
 app.delete("/urls/:id/delete", (req, res) => {
   const userId = req.session.userId;
-  if (!userId) return res.status(400).send("Please log in, in order to delete URL");
+  //Filters for not being logged in, no existing URL, and not owning the URL being used.
+  if (!userId) return res.status(401).send("Please log in, in order to delete URL");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
   if (urlDatabase[req.params.id].userID !== userId) return res.status(401).send("You do not own this URL, so you cannot delete it.");
 
@@ -189,16 +193,24 @@ app.delete("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  urlDatabase[req.params.id].timesVisited++;
-
-  for (const url in urlDatabase) {
-    if (url === req.params.id) {
-      const longURL = urlDatabase[req.params.id].longURL;
-      return res.redirect(longURL);
-    }
+  if (urlDatabase[req.params.id] === undefined) {
+    return res.status(404).send("This URL does not exist in our database");
   }
+
+
+  // for (const url in urlDatabase) {
+  //   if (url === req.params.id) {
+  //     const longURL = urlDatabase[req.params.id].longURL;
+  //     return res.redirect(longURL);
+  //   }
+  // }
+
+
+  urlDatabase[req.params.id].timesVisited++;
+  const longURL = urlDatabase[req.params.id].longURL;
+  res.redirect(longURL);
   
-  res.status(404).send("This URL does not exist in our database");
+  // res.status(404).send("This URL does not exist in our database");
 });
 
 app.get("/urls.json", (req, res) => {
