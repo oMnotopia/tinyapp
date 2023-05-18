@@ -1,6 +1,7 @@
-const { checkIfUserExists, getUserByEmail, generateRandomString, urlsForUser } = require("./helpers");
+const { getUserByEmail, generateRandomString, urlsForUser } = require("./helpers");
 const express = require("express");
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override');
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
@@ -21,6 +22,7 @@ app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
+app.use(methodOverride('_method'));
 app.set("view engine", "ejs");
 
 //Database objects
@@ -176,7 +178,7 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
-app.post("/urls/:id/delete", (req, res) => {
+app.delete("/urls/:id/delete", (req, res) => {
   const userId = req.session.userId;
   if (!userId) return res.status(400).send("Please log in, in order to delete URL");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
