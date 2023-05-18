@@ -1,51 +1,23 @@
+const { checkIfUserExists, returnUsersId, generateRandomString, urlsForUser } = require("./helpers");
 const express = require("express");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
 
-const alphaNumericArr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-const generateRandomString = () => {
-  let randStr = '';
-  while (randStr.length < 6) {
-    const randNum = Math.floor(Math.random() * alphaNumericArr.length);
-    randStr += alphaNumericArr[randNum];
-  }
-  return randStr;
-};
-
-const checkIfUserExists = (userEmail, users) => {
-  for (const user in users) {
-    if (users[user].email === userEmail) return true;
-  }
-  return false;
-};
-
-const checkIfPasswordsMatch = (userPassword, userEmail) => {
+const checkIfPasswordsMatch = (userPassword, userEmail, users) => {
   let hashedPassword;
   for (const user in users) {
     if (users[user].email === userEmail) hashedPassword = users[user].password;
   }
-  console.log(hashedPassword)
+
   if (bcrypt.compareSync(userPassword, hashedPassword)) return true;
   return false;
 };
 
-const returnUsersId = (userEmail) => {
-  for (const user in users) {
-    if (users[user].email === userEmail) return users[user].id;
-  }
-};
 
-const urlsForUser = (id) => {
-  const filteredObj = {};
 
-  for (const obj in urlDatabase) {
-    if (urlDatabase[obj].userID === id) filteredObj[obj] = urlDatabase[obj];
-  }
-  
-  return filteredObj;
-};
+
 
 //Enabling middleware
 app.use(express.urlencoded({ extended: true }));
@@ -104,9 +76,9 @@ app.post("/login", (req, res) => {
   const userEmail =  req.body.email;
   const userPassword = req.body.password;
   if (!checkIfUserExists(userEmail, users)) return res.status(403).send("This email doesn't exist please register an account");
-  if (!checkIfPasswordsMatch(userPassword, userEmail)) return res.status(403).send("The password does not match the existing one.");
+  if (!checkIfPasswordsMatch(userPassword, userEmail, users)) return res.status(403).send("The password does not match the existing one.");
 
-  const userId = returnUsersId(userEmail);
+  const userId = returnUsersId(userEmail, users);
 
   req.session.user_id = userId;
   res.redirect("/urls");
@@ -152,7 +124,7 @@ app.post("/register", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
-  const filteredObj = urlsForUser(userId);
+  const filteredObj = urlsForUser(userId, urlDatabase);
 
   const templateVars = {
     user: users[userId],
