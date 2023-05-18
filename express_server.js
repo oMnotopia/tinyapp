@@ -2,6 +2,7 @@ const { getUserByEmail, generateRandomString, urlsForUser } = require("./helpers
 const express = require("express");
 const cookieSession = require('cookie-session');
 const methodOverride = require('method-override');
+const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080;
@@ -23,6 +24,7 @@ app.use(cookieSession({
   keys: ['key1', 'key2']
 }));
 app.use(methodOverride('_method'));
+app.use(morgan('common'));
 app.set("view engine", "ejs");
 
 //Database objects
@@ -30,10 +32,12 @@ const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
     userID: "aJ48lW",
+    timesVisited: 0,
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
     userID: "aJ48lW",
+    timesVisited: 0,
   },
 };
 
@@ -140,6 +144,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[key] = {
     longURL: req.body.longURL,
     userID: userId,
+    timesVisited: 0,
   };
   res.redirect(`/urls/${key}`);
 });
@@ -164,6 +169,7 @@ app.get("/urls/:id", (req, res) => {
     user: users[userId],
     short: req.params.id,
     long: urlDatabase[req.params.id].longURL,
+    timesVisited: urlDatabase[req.params.id].timesVisited,
   };
   res.render("urls_show", templateVars);
 });
@@ -189,6 +195,8 @@ app.delete("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
+  urlDatabase[req.params.id].timesVisited++;
+
   for (const url in urlDatabase) {
     if (url === req.params.id) {
       const longURL = urlDatabase[req.params.id].longURL;
