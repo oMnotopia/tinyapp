@@ -71,7 +71,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const userEmail =  req.body.email;
   const userPassword = req.body.password;
-  if (!checkIfUserExists(userEmail, users)) return res.status(403).send("This email doesn't exist please register an account");
+  if (!getUserByEmail(userEmail, users)) return res.status(403).send("This email doesn't exist please register an account");
   if (!checkIfPasswordsMatch(userPassword, userEmail, users)) return res.status(403).send("The password does not match the existing one.");
 
   const userId = getUserByEmail(userEmail, users);
@@ -103,7 +103,7 @@ app.post("/register", (req, res) => {
   const userPass = req.body.password;
 
   if (userEmail === "" || userPass === "") return res.status(400).send("Missing email or password");
-  if (checkIfUserExists(userEmail, users)) return res.status(400).send("This email already exists in the database.");
+  if (getUserByEmail(userEmail, users)) return res.status(400).send("This email already exists in the database.");
 
   const usersRandomId = generateRandomString();
   users[usersRandomId] = {
