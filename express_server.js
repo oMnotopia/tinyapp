@@ -192,14 +192,19 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const userId = req.cookies["user_id"];
   if (!userId) return res.status(400).send("Please log in, in order to create shortened URLS");
-  if (urlDatabase[req.params.id].userID !== userId) return res.status(401).send("You do not own this URL.");
   if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
+  if (urlDatabase[req.params.id].userID !== userId) return res.status(401).send("You do not own this URL, so you cannot access it.");
 
   urlDatabase[req.params.id].longURL = req.body.longURLEdit;
   res.redirect("/urls");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  const userId = req.cookies["user_id"];
+  if (!userId) return res.status(400).send("Please log in, in order to delete URL");
+  if (urlDatabase[req.params.id] === undefined) return res.status(404).send("This url does not exist");
+  if (urlDatabase[req.params.id].userID !== userId) return res.status(401).send("You do not own this URL, so you cannot delete it.");
+
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
